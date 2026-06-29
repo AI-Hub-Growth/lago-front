@@ -177,6 +177,7 @@ const permissions: MemberForEditRoleForDialogFragment['permissions'] = {
   quotesVoid: true,
   orderFormsSign: true,
   orderFormsVoid: true,
+  ordersUpdate: true,
   pricingUnitsCreate: true,
   pricingUnitsUpdate: true,
   pricingUnitsView: true,
