@@ -4449,5 +4449,6 @@
   "text_1782481509414pdptl0o3jmb": "Term duration",
   "text_1782481509414nxr0nibo8wj": "Start date",
   "text_1782481509414fozc0xn274l": "Payment terms",
-  "text_1782744552573k822vj4c3o0": "This is a read-only preview of the selected quote version."
+  "text_1782744552573k822vj4c3o0": "This is a read-only preview of the selected quote version.",
+  "text_17827453798351lxoetcgnjt": "Quote {{quoteNumber}} - {{quoteVersion}}"
 }
