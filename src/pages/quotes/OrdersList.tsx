@@ -2,6 +2,7 @@ import { useInternationalization } from '~/hooks/core/useInternationalization'
 
 import { QuotesSectionTable } from './common/QuotesSectionTable'
 import { useOrdersColumns } from './common/useOrdersColumns'
+import { useOrderActions } from './hooks/useOrderActions'
 import { useOrders } from './hooks/useOrders'
 
 interface OrdersListProps {
@@ -13,6 +14,8 @@ const OrdersList = ({ quoteNumber }: OrdersListProps): JSX.Element => {
   const { orders, loading, error, fetchMore, metadata } = useOrders(
     quoteNumber ? { quoteNumber: [quoteNumber] } : undefined,
   )
+  const { getActions } = useOrderActions()
+
   const columns = useOrdersColumns({ hideSourceQuote: !!quoteNumber })
 
   return (
@@ -28,6 +31,7 @@ const OrdersList = ({ quoteNumber }: OrdersListProps): JSX.Element => {
         title: translate('text_1782392058759fvp6ye50x8g'),
         subtitle: translate('text_1782392058759ee7h86svmtj'),
       }}
+      getActions={(order) => getActions(order)}
     />
   )
 }
