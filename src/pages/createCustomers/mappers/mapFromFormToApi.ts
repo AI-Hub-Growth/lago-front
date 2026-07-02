@@ -53,15 +53,20 @@ export const mapFromFormToApi = (
     taxCustomer: values.taxCustomer,
   })
 
-  const providerCustomer =
+  const shouldCreateProviderCustomer =
     values.paymentProviderCustomer?.providerCustomerId ||
-    values.paymentProviderCustomer?.syncWithProvider
-      ? {
-          providerCustomerId: values.paymentProviderCustomer?.providerCustomerId,
-          syncWithProvider: values.paymentProviderCustomer?.syncWithProvider,
-          providerPaymentMethods: getProviderPaymentMethods(),
-        }
-      : null
+    values.paymentProviderCustomer?.syncWithProvider ||
+    paymentProvider === ProviderTypeEnum.Alipay
+
+  const providerCustomer = shouldCreateProviderCustomer
+    ? {
+        providerCustomerId: values.paymentProviderCustomer?.providerCustomerId,
+        syncWithProvider:
+          values.paymentProviderCustomer?.syncWithProvider ||
+          paymentProvider === ProviderTypeEnum.Alipay,
+        providerPaymentMethods: getProviderPaymentMethods(),
+      }
+    : null
 
   return {
     email: formattedEmail,

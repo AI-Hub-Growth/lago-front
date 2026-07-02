@@ -38,6 +38,9 @@ gql`
       ... on StripeProvider {
         id
       }
+      ... on AlipayProvider {
+        id
+      }
       ... on GocardlessProvider {
         id
       }

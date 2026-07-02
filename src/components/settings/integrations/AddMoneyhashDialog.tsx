@@ -36,6 +36,9 @@ gql`
       ... on AdyenProvider {
         id
       }
+      ... on AlipayProvider {
+        id
+      }
       ... on CashfreeProvider {
         id
       }

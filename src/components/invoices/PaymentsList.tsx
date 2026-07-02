@@ -58,6 +58,9 @@ gql`
       ... on AdyenProvider {
         name
       }
+      ... on AlipayProvider {
+        name
+      }
       ... on CashfreeProvider {
         name
       }
