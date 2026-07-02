@@ -368,6 +368,32 @@ describe('mapFromFormToApi', () => {
 
       expect(result.providerCustomer).toBeNull()
     })
+
+    it('should create a provider customer payload for Alipay without requiring an external provider customer id', () => {
+      const formValues: CreateCustomerDefaultValues = {
+        ...emptyCreateCustomerDefaultValues,
+        externalId: 'customer-123',
+        paymentProviderCode: 'alipay_1',
+        paymentProviderCustomer: {
+          providerCustomerId: '',
+          syncWithProvider: false,
+          providerType: ProviderTypeEnum.Alipay,
+          providerPaymentMethods: {},
+        },
+      }
+
+      const result = mapFromFormToApi(formValues, {
+        paymentProvider: ProviderTypeEnum.Alipay,
+      })
+
+      expect(result.paymentProvider).toBe(ProviderTypeEnum.Alipay)
+      expect(result.paymentProviderCode).toBe('alipay_1')
+      expect(result.providerCustomer).toEqual({
+        providerCustomerId: '',
+        syncWithProvider: true,
+        providerPaymentMethods: [],
+      })
+    })
   })
 
   describe('Metadata mapping', () => {

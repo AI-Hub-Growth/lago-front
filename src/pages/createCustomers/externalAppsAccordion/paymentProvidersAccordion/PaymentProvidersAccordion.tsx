@@ -18,6 +18,7 @@ import { withForm } from '~/hooks/forms/useAppform'
 import { usePaymentProviders } from '~/pages/createCustomers/common/usePaymentProviders'
 import { emptyCreateCustomerDefaultValues } from '~/pages/createCustomers/formInitialization/validationSchema'
 import Adyen from '~/public/images/adyen.svg'
+import Alipay from '~/public/images/alipay.svg'
 import Cashfree from '~/public/images/cashfree.svg'
 import Flutterwave from '~/public/images/flutterwave.svg'
 import GoCardless from '~/public/images/gocardless.svg'
@@ -34,8 +35,9 @@ type PaymentProvidersAccordionProps = {
   customer: AddCustomerDrawerFragment | null | undefined
 }
 
-const avatarMapping: Record<ProviderTypeEnum, ReactNode> = {
+const avatarMapping: Partial<Record<ProviderTypeEnum, ReactNode>> = {
   [ProviderTypeEnum.Adyen]: <Adyen />,
+  [ProviderTypeEnum.Alipay]: <Alipay />,
   [ProviderTypeEnum.Cashfree]: <Cashfree />,
   [ProviderTypeEnum.Flutterwave]: <Flutterwave />,
   [ProviderTypeEnum.Gocardless]: <GoCardless />,
@@ -92,6 +94,7 @@ const PaymentProvidersAccordion = withForm({
       const unsupportedPaymentProviders: ProviderTypeEnum[] = [
         ProviderTypeEnum.Cashfree,
         ProviderTypeEnum.Flutterwave,
+        ProviderTypeEnum.Alipay,
       ]
 
       return !unsupportedPaymentProviders.includes(paymentProvider)

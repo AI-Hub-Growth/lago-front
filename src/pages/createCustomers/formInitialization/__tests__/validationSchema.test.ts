@@ -575,7 +575,20 @@ describe('validationSchema', () => {
       expect(result.success).toBe(true)
     })
 
-    it('requires providerCustomerId for non-Cashfree/Flutterwave when syncWithProvider is false', () => {
+    it('validates Alipay without providerCustomerId', () => {
+      const result = validationSchema.safeParse({
+        externalId: 'customer-123',
+        paymentProviderCustomer: {
+          providerType: ProviderTypeEnum.Alipay,
+          syncWithProvider: false,
+        },
+        metadata: [],
+      })
+
+      expect(result.success).toBe(true)
+    })
+
+    it('requires providerCustomerId for providers without implicit customer support when syncWithProvider is false', () => {
       const result = validationSchema.safeParse({
         externalId: 'customer-123',
         paymentProviderCustomer: {

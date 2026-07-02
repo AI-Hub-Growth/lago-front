@@ -38,6 +38,9 @@ gql`
       ... on AdyenProvider {
         id
       }
+      ... on AlipayProvider {
+        id
+      }
       ... on GocardlessProvider {
         id
       }

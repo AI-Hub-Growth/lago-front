@@ -103,6 +103,12 @@ gql`
           code
         }
 
+        ... on AlipayProvider {
+          id
+          name
+          code
+        }
+
         ... on GocardlessProvider {
           id
           name

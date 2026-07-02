@@ -17,6 +17,13 @@ gql`
           code
         }
 
+        ... on AlipayProvider {
+          __typename
+          id
+          name
+          code
+        }
+
         ... on FlutterwaveProvider {
           __typename
           id

@@ -35,6 +35,9 @@ gql`
       ... on FlutterwaveProvider {
         id
       }
+      ... on AlipayProvider {
+        id
+      }
       ... on CashfreeProvider {
         id
       }

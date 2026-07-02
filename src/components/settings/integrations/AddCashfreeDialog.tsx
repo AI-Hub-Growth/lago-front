@@ -37,6 +37,9 @@ gql`
       ... on CashfreeProvider {
         id
       }
+      ... on AlipayProvider {
+        id
+      }
       ... on GocardlessProvider {
         id
       }

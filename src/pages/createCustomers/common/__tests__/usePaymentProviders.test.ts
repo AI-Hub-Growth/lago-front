@@ -51,14 +51,20 @@ async function prepare({
           code: 'cashfree-india',
         },
         {
-          __typename: 'FlutterwaveProvider',
+          __typename: 'AlipayProvider',
           id: '5',
+          name: 'Alipay China',
+          code: 'alipay-china',
+        },
+        {
+          __typename: 'FlutterwaveProvider',
+          id: '6',
           name: 'Flutterwave Africa',
           code: 'flutterwave-africa',
         },
         {
           __typename: 'MoneyhashProvider',
-          id: '6',
+          id: '7',
           name: 'Moneyhash MENA',
           code: 'moneyhash-mena',
         },
@@ -114,7 +120,7 @@ describe('usePaymentProviders', () => {
       // After loading completes
       expect(result.current.isLoadingPaymentProviders).toBe(false)
       expect(result.current.paymentProviders).toBeDefined()
-      expect(result.current.paymentProviders?.paymentProviders?.collection).toHaveLength(6)
+      expect(result.current.paymentProviders?.paymentProviders?.collection).toHaveLength(7)
 
       const collection = result.current.paymentProviders?.paymentProviders?.collection
 
@@ -130,9 +136,9 @@ describe('usePaymentProviders', () => {
         name: 'GoCardless UK',
         code: 'gocardless-uk',
       })
-      expect(collection?.[5]).toEqual({
+      expect(collection?.[6]).toEqual({
         __typename: 'MoneyhashProvider',
-        id: '6',
+        id: '7',
         name: 'Moneyhash MENA',
         code: 'moneyhash-mena',
       })
@@ -206,6 +212,7 @@ describe('usePaymentProviders', () => {
       expect(providerTypes).toContain('GocardlessProvider')
       expect(providerTypes).toContain('AdyenProvider')
       expect(providerTypes).toContain('CashfreeProvider')
+      expect(providerTypes).toContain('AlipayProvider')
       expect(providerTypes).toContain('FlutterwaveProvider')
       expect(providerTypes).toContain('MoneyhashProvider')
     })
@@ -236,6 +243,10 @@ describe('usePaymentProviders', () => {
       const cashfreeType = result.current.getPaymentProvider('cashfree-india')
 
       expect(cashfreeType).toBe(ProviderTypeEnum.Cashfree)
+
+      const alipayType = result.current.getPaymentProvider('alipay-china')
+
+      expect(alipayType).toBe(ProviderTypeEnum.Alipay)
 
       // Test Flutterwave provider
       const flutterwaveType = result.current.getPaymentProvider('flutterwave-africa')

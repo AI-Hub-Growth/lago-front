@@ -1,4 +1,4 @@
-import { gql } from '@apollo/client'
+import { gql, useQuery } from '@apollo/client'
 import { useRef } from 'react'
 import { generatePath } from 'react-router-dom'
 
@@ -20,6 +20,10 @@ import {
   AddAdyenDialog,
   AddAdyenDialogRef,
 } from '~/components/settings/integrations/AddAdyenDialog'
+import {
+  AddAlipayDialog,
+  AddAlipayDialogRef,
+} from '~/components/settings/integrations/AddAlipayDialog'
 import {
   AddAnrokDialog,
   AddAnrokDialogRef,
@@ -74,6 +78,7 @@ import {
 import { IntegrationsTabsOptionsEnum } from '~/core/constants/tabsOptions'
 import {
   ADYEN_INTEGRATION_ROUTE,
+  ALIPAY_INTEGRATION_ROUTE,
   ANROK_INTEGRATION_ROUTE,
   AVALARA_INTEGRATION_ROUTE,
   CASHFREE_INTEGRATION_ROUTE,
@@ -91,6 +96,7 @@ import {
 } from '~/core/router'
 import {
   PremiumIntegrationTypeEnum,
+  ProviderTypeEnum,
   useGetBillingEntitiesQuery,
   useIntegrationsSettingQuery,
 } from '~/generated/graphql'
@@ -99,6 +105,7 @@ import { useCurrentUser } from '~/hooks/useCurrentUser'
 import { useOrganizationInfos } from '~/hooks/useOrganizationInfos'
 import Adyen from '~/public/images/adyen.svg'
 import Airbyte from '~/public/images/airbyte.svg'
+import Alipay from '~/public/images/alipay.svg'
 import Anrok from '~/public/images/anrok.svg'
 import Avalara from '~/public/images/avalara.svg'
 import Cashfree from '~/public/images/cashfree.svg'
@@ -132,6 +139,10 @@ gql`
         }
 
         ... on AdyenProvider {
+          id
+        }
+
+        ... on AlipayProvider {
           id
         }
 
@@ -181,6 +192,7 @@ const Integrations = () => {
   const addAvalaraDialogRef = useRef<AddAvalaraDialogRef>(null)
   const addStripeDialogRef = useRef<AddStripeDialogRef>(null)
   const addAdyenDialogRef = useRef<AddAdyenDialogRef>(null)
+  const addAlipayDialogRef = useRef<AddAlipayDialogRef>(null)
   const addGocardlessDialogRef = useRef<AddGocardlessDialogRef>(null)
   const addCashfreeDialogRef = useRef<AddCashfreeDialogRef>(null)
   const addLagoTaxManagementDialog = useRef<AddLagoTaxManagementDialogRef>(null)
@@ -195,6 +207,22 @@ const Integrations = () => {
     variables: { limit: 1000 },
     nextFetchPolicy: 'cache-and-network',
   })
+  const { data: alipayData } = useQuery(
+    gql`
+      query alipayIntegrationPresence($limit: Int, $type: ProviderTypeEnum) {
+        paymentProviders(limit: $limit, type: $type) {
+          collection {
+            ... on AlipayProvider {
+              id
+            }
+          }
+        }
+      }
+    `,
+    {
+      variables: { limit: 1, type: ProviderTypeEnum.Alipay },
+    },
+  )
 
   const { data: billingEntitiesData } = useGetBillingEntitiesQuery()
 
@@ -206,6 +234,7 @@ const Integrations = () => {
   const hasAdyenIntegration = data?.paymentProviders?.collection?.some(
     (provider) => provider?.__typename === 'AdyenProvider',
   )
+  const hasAlipayIntegration = !!alipayData?.paymentProviders?.collection?.length
   const hasStripeIntegration = data?.paymentProviders?.collection?.some(
     (provider) => provider?.__typename === 'StripeProvider',
   )
@@ -725,6 +754,36 @@ const Integrations = () => {
                       />
                       <Selector
                         fullWidth
+                        title={translate('text_1782864000000alipayname')}
+                        subtitle={translate('text_1782864000000alipaysubtitle')}
+                        icon={
+                          <Avatar size="big" variant="connector-full">
+                            <Alipay />
+                          </Avatar>
+                        }
+                        endContent={getEndContent({
+                          showConnectedBadge: hasAlipayIntegration,
+                        })}
+                        hoverActions={getHoverActions(
+                          hasAlipayIntegration,
+                          generatePath(ALIPAY_INTEGRATION_ROUTE, {
+                            integrationGroup: IntegrationsTabsOptionsEnum.Community,
+                          }),
+                        )}
+                        onClick={() => {
+                          if (hasAlipayIntegration) {
+                            navigate(
+                              generatePath(ALIPAY_INTEGRATION_ROUTE, {
+                                integrationGroup: IntegrationsTabsOptionsEnum.Community,
+                              }),
+                            )
+                          } else {
+                            addAlipayDialogRef.current?.openDialog()
+                          }
+                        }}
+                      />
+                      <Selector
+                        fullWidth
                         title={translate('text_1727619878796wmgcntkfycn')}
                         subtitle={translate('text_634ea0ecc6147de10ddb6631')}
                         icon={
@@ -851,6 +910,7 @@ const Integrations = () => {
       <AddAnrokDialog ref={addAnrokDialogRef} />
       <AddAvalaraDialog ref={addAvalaraDialogRef} />
       <AddAdyenDialog ref={addAdyenDialogRef} />
+      <AddAlipayDialog ref={addAlipayDialogRef} />
       <AddStripeDialog ref={addStripeDialogRef} />
       <AddCashfreeDialog ref={addCashfreeDialogRef} />
       <AddMoneyhashDialog ref={addMoneyhashDialogRef} />
