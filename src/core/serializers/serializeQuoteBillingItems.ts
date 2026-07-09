@@ -1,13 +1,14 @@
 import type { EntityData } from '~/components/designSystem/RichTextEditor/common/RichTextEditorContext'
 import type { AddOnItem } from '~/components/designSystem/RichTextEditor/PricingBlock/constants'
 
+import { type BillingItemCoupon, fromCoupons } from './serializeQuoteCoupons'
 import { type BillingItemPlan, fromPlanBillingItems } from './serializeQuotePlanBillingItems'
 
 // --- Backend contract types (snake_case) ---
 
 export interface AddOnPayload {
   position: number
-  add_on_code: string
+  code: string
   name: string
   description: string
   units: number
@@ -19,10 +20,10 @@ export interface AddOnPayload {
   tax_codes: string[]
 }
 
-// position, add_on_code, and tax_codes are not overridable
-type OverridableFields = Omit<AddOnPayload, 'position' | 'add_on_code' | 'tax_codes'>
+// position, code, and tax_codes are not overridable
+type OverridableFields = Omit<AddOnPayload, 'position' | 'code' | 'tax_codes'>
 
-export interface BillingItemAddon {
+interface BillingItemAddon {
   type: 'addon'
   id: string
   localId?: string
@@ -31,8 +32,9 @@ export interface BillingItemAddon {
 }
 
 export interface BillingItemsPayload {
-  addons: BillingItemAddon[]
+  addons?: BillingItemAddon[]
   plans?: BillingItemPlan[]
+  coupons?: BillingItemCoupon[]
 }
 
 // --- Serialization helpers ---
@@ -48,7 +50,7 @@ const normalizeDateTime = (value: string): string | null => (value === '' ? null
 export const toBillingItems = (
   addOnItems: AddOnItem[],
   originalPayloads: Record<string, AddOnPayload>,
-): BillingItemsPayload => {
+): Required<Pick<BillingItemsPayload, 'addons'>> => {
   const addons: BillingItemAddon[] = addOnItems.map((item, index) => {
     const original = originalPayloads[item.localId] ?? originalPayloads[item.addOnId]
     const payload: AddOnPayload = { ...original, position: index + 1 }
@@ -106,7 +108,9 @@ export const fromBillingItems = (billingItems: BillingItemsPayload): FromBilling
   const addOnItems: AddOnItem[] = []
   const originalPayloads: Record<string, AddOnPayload> = {}
 
-  const sorted = [...billingItems.addons].sort((a, b) => a.payload.position - b.payload.position)
+  const sorted = [...(billingItems.addons ?? [])].sort(
+    (a, b) => a.payload.position - b.payload.position,
+  )
 
   for (const addon of sorted) {
     const { payload, overrides, id, localId: savedLocalId } = addon
@@ -129,7 +133,7 @@ export const fromBillingItems = (billingItems: BillingItemsPayload): FromBilling
       entityType: 'addOn',
       name: effective.name,
       invoiceDisplayName: effective.invoice_display_name,
-      code: payload.add_on_code,
+      code: payload.code,
       description: effective.description,
       units: String(effective.units),
       unitAmountCents: String(effective.unit_amount_cents),
@@ -143,7 +147,7 @@ export const fromBillingItems = (billingItems: BillingItemsPayload): FromBilling
       addOnId: id,
       name: effective.name,
       invoiceDisplayName: effective.invoice_display_name,
-      code: payload.add_on_code,
+      code: payload.code,
       description: effective.description,
       units: String(effective.units),
       unitAmountCents: String(effective.unit_amount_cents),
@@ -182,6 +186,16 @@ export const buildPreviewEntities = (
     const { entityData } = fromPlanBillingItems(billingItems.plans)
 
     Object.assign(previewEntities, entityData)
+  }
+
+  if (billingItems.coupons && billingItems.coupons.length > 0) {
+    const { entities: couponEntities } = fromCoupons(billingItems.coupons)
+
+    Object.assign(previewEntities, couponEntities)
+    // also key by couponId for legacy entityIds resolution
+    for (const c of billingItems.coupons) {
+      previewEntities[c.id] = couponEntities[c.localId]
+    }
   }
 
   return previewEntities

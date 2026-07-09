@@ -270,5 +270,11 @@
   "text_1782864000000alipaynotifyurl": "通知 URL",
   "text_1782864000000alipaycopynotify": "複製通知 URL",
   "text_1782864000000alipaynotifycopied": "通知 URL 已複製",
-  "text_1782864000000alipaysavechanges": "儲存變更"
-}
+  "text_1782864000000alipaysavechanges": "儲存變更",
+  "text_1782889379261hdcd0jhzdm6": "折扣",
+  "text_1782891666475j9e81afl8in": "折扣",
+  "text_632d68358f1fedc68eed3e80": "期限",
+  "text_632d68358f1fedc68eed3ea3": "一次",
+  "text_63c83a3476e46bc6ab9d85d6": "永久",
+  "text_17830875698228lpz4i09jop": "{{count}} 個計費週期|{{count}} 個計費週期",
+  "text_1783090333139dnllq2q6ege": "折扣值"}

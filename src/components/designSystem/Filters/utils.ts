@@ -10,9 +10,6 @@ import {
   ACTIVITY_LOG_FILTER_PREFIX,
   ANALYTICS_INVOICES_FILTER_PREFIX,
   ANALYTICS_USAGE_BILLABLE_METRIC_FILTER_PREFIX,
-  ANALYTICS_USAGE_BREAKDOWN_FILTER_PREFIX,
-  ANALYTICS_USAGE_BREAKDOWN_METERED_FILTER_PREFIX,
-  ANALYTICS_USAGE_BREAKDOWN_RECURRING_FILTER_PREFIX,
   ANALYTICS_USAGE_OVERVIEW_FILTER_PREFIX,
   API_LOGS_FILTER_PREFIX,
   CREDIT_NOTE_LIST_FILTER_PREFIX,
@@ -25,6 +22,7 @@ import {
   MRR_BREAKDOWN_OVERVIEW_FILTER_PREFIX,
   MRR_BREAKDOWN_PLANS_FILTER_PREFIX,
   ORDER_FORM_LIST_FILTER_PREFIX,
+  ORDER_LIST_FILTER_PREFIX,
   PREPAID_CREDITS_OVERVIEW_FILTER_PREFIX,
   QUOTE_LIST_FILTER_PREFIX,
   REVENUE_STREAMS_BREAKDOWN_CUSTOMER_FILTER_PREFIX,
@@ -49,13 +47,13 @@ import {
   type GetInvoicesListQueryVariables,
   type GetMrrsQueryVariables,
   type GetOrderFormsQueryVariables,
+  type GetOrdersQueryVariables,
   type GetPrepaidCreditsQueryVariables,
   type GetQuotesQueryVariables,
   type GetRevenueStreamsQueryVariables,
   type GetSecurityLogsQueryVariables,
   type GetSubscriptionsListQueryVariables,
   type GetUsageBillableMetricQueryVariables,
-  type GetUsageBreakdownQueryVariables,
   type GetUsageOverviewQueryVariables,
   type GetWebhookLogQueryVariables,
   InvoicePaymentStatusTypeEnum,
@@ -79,10 +77,12 @@ import {
   CustomerInvoicesAvailableFilters,
   CustomerPaymentsAvailableFilters,
   filterDataInlineSeparator,
+  filterDataLabelCommaPlaceholder,
   ForecastsAvailableFilters,
   InvoiceAvailableFilters,
   MrrBreakdownPlansAvailableFilters,
   MrrOverviewAvailableFilters,
+  OrderAvailableFilters,
   OrderFormAvailableFilters,
   QuoteAvailableFilters,
   RevenueStreamsAvailablePopperFilters,
@@ -91,9 +91,6 @@ import {
   SecurityLogsAvailableFilters,
   SubscriptionAvailableFilters,
   UsageBillableMetricAvailableFilters,
-  UsageBreakdownAvailableFilters,
-  UsageBreakdownMeteredAvailableFilters,
-  UsageBreakdownRecurringAvailableFilters,
   UsageOverviewAvailableFilters,
   WebhookLogsAvailableFilters,
 } from './types'
@@ -157,6 +154,19 @@ export const formatMetadataFilter = (metadata: { key: string; value: string }[])
     .join(METADATA_SPLITTER)
 }
 
+/**
+ * Multiple-value filters join selections with a comma; the display label embedded after
+ * `filterDataInlineSeparator` (a customer/entity name, an email) can itself contain commas.
+ * escapeFilterLabel encodes those commas at storage time so a single selection never
+ * over-splits; unescapeFilterLabel restores them for display. The id portion (before the
+ * separator) is never escaped, so query decoding is unaffected.
+ */
+export const escapeFilterLabel = (label: string): string =>
+  label.split(',').join(filterDataLabelCommaPlaceholder)
+
+export const unescapeFilterLabel = (label: string): string =>
+  label.split(filterDataLabelCommaPlaceholder).join(',')
+
 export const FiltersItemDates = [
   AvailableFiltersEnum.date,
   AvailableFiltersEnum.issuingDate,
@@ -164,6 +174,7 @@ export const FiltersItemDates = [
   AvailableFiltersEnum.webhookDate,
   AvailableFiltersEnum.quoteCreatedAt,
   AvailableFiltersEnum.orderFormCreatedAt,
+  AvailableFiltersEnum.orderExecutedAt,
 ]
 
 // TODO: Fix this type
@@ -239,6 +250,15 @@ export const FILTER_VALUE_MAP: Record<AvailableFiltersEnum, Function> = {
   },
   [AvailableFiltersEnum.orderFormNumber]: (value: string) => value.split(','),
   [AvailableFiltersEnum.orderFormStatus]: (value: string) => value.split(','),
+  [AvailableFiltersEnum.orderStatus]: (value: string) => value.split(','),
+  [AvailableFiltersEnum.orderNumber]: (value: string) => value.split(','),
+  [AvailableFiltersEnum.orderExecutionMode]: (value: string) => value.split(','),
+  [AvailableFiltersEnum.orderExecutedAt]: (value: string) => {
+    return {
+      executedAtFrom: value.split(',')[0],
+      executedAtTo: value.split(',')[1],
+    }
+  },
   [AvailableFiltersEnum.quoteCreatedAt]: (value: string) => {
     return {
       fromDate: value.split(',')[0],
@@ -769,54 +789,6 @@ export const formatFiltersForUsageOverviewQuery = (
   })
 }
 
-type UsageBreakdownQueryFilters = Partial<
-  Pick<
-    GetUsageBreakdownQueryVariables,
-    | 'currency'
-    | 'customerCountry'
-    | 'customerType'
-    | 'externalCustomerId'
-    | 'externalSubscriptionId'
-    | 'fromDate'
-    | 'toDate'
-    | 'planCode'
-  >
->
-
-export const formatFiltersForUsageBreakdownQuery = (
-  searchParams: URLSearchParams,
-): UsageBreakdownQueryFilters => {
-  const keyMap: Partial<Record<AvailableFiltersEnum, keyof UsageBreakdownQueryFilters & string>> = {
-    [AvailableFiltersEnum.country]: 'customerCountry',
-    [AvailableFiltersEnum.customerAccountType]: 'customerType',
-    [AvailableFiltersEnum.customerExternalId]: 'externalCustomerId',
-    [AvailableFiltersEnum.subscriptionExternalId]: 'externalSubscriptionId',
-  }
-
-  return formatFiltersForQuery<UsageBreakdownQueryFilters>({
-    keyMap,
-    searchParams,
-    availableFilters: UsageBreakdownAvailableFilters,
-    filtersNamePrefix: ANALYTICS_USAGE_BREAKDOWN_FILTER_PREFIX,
-  })
-}
-
-export const formatFiltersForUsageBreakdownMeteredQuery = (searchParams: URLSearchParams) => {
-  return formatFiltersForQuery({
-    searchParams,
-    availableFilters: UsageBreakdownMeteredAvailableFilters,
-    filtersNamePrefix: ANALYTICS_USAGE_BREAKDOWN_METERED_FILTER_PREFIX,
-  })
-}
-
-export const formatFiltersForUsageBreakdownRecurringQuery = (searchParams: URLSearchParams) => {
-  return formatFiltersForQuery({
-    searchParams,
-    availableFilters: UsageBreakdownRecurringAvailableFilters,
-    filtersNamePrefix: ANALYTICS_USAGE_BREAKDOWN_RECURRING_FILTER_PREFIX,
-  })
-}
-
 type UsageBillableMetricQueryFilters = Partial<
   Pick<GetUsageBillableMetricQueryVariables, 'currency' | 'timeGranularity' | 'fromDate' | 'toDate'>
 >
@@ -974,7 +946,10 @@ export const formatActiveFilterValueDisplay = (
         .map((v) => formatActivityType(v as ActivityTypeEnum))
         .join(', ')
     case AvailableFiltersEnum.customerExternalId:
-      return value.split(filterDataInlineSeparator)[1] || value.split(filterDataInlineSeparator)[0]
+    case AvailableFiltersEnum.billingEntityId:
+      return unescapeFilterLabel(
+        value.split(filterDataInlineSeparator)[1] || value.split(filterDataInlineSeparator)[0],
+      )
     case AvailableFiltersEnum.isCustomerTinEmpty:
       return (
         translate?.(
@@ -989,6 +964,7 @@ export const formatActiveFilterValueDisplay = (
     case AvailableFiltersEnum.webhookDate:
     case AvailableFiltersEnum.quoteCreatedAt:
     case AvailableFiltersEnum.orderFormCreatedAt:
+    case AvailableFiltersEnum.orderExecutedAt:
       return value
         .split(',')
         .map((v) => {
@@ -1005,10 +981,12 @@ export const formatActiveFilterValueDisplay = (
     case AvailableFiltersEnum.multipleCustomers:
       return value
         .split(',')
-        .map((v) => v.split(filterDataInlineSeparator)[1] || v.split(filterDataInlineSeparator)[0])
+        .map((v) =>
+          unescapeFilterLabel(
+            v.split(filterDataInlineSeparator)[1] || v.split(filterDataInlineSeparator)[0],
+          ),
+        )
         .join(', ')
-    case AvailableFiltersEnum.billingEntityId:
-      return value.split(filterDataInlineSeparator)[1] || value.split(filterDataInlineSeparator)[0]
     case AvailableFiltersEnum.userEmails:
       return value.toLocaleLowerCase()
     case AvailableFiltersEnum.billableMetricCode:
@@ -1078,6 +1056,33 @@ export const formatFiltersForOrderFormsQuery = (
       [AvailableFiltersEnum.orderFormStatus]: 'status',
       [AvailableFiltersEnum.orderFormNumber]: 'number',
       [AvailableFiltersEnum.multipleCustomers]: 'customerId',
+      [AvailableFiltersEnum.userIds]: 'ownerId',
+    },
+  })
+
+type OrdersQueryFilters = Partial<
+  Pick<
+    GetOrdersQueryVariables,
+    | 'status'
+    | 'number'
+    | 'customerId'
+    | 'ownerId'
+    | 'executionMode'
+    | 'executedAtFrom'
+    | 'executedAtTo'
+  >
+>
+
+export const formatFiltersForOrdersQuery = (searchParams: URLSearchParams): OrdersQueryFilters =>
+  formatFiltersForQuery<OrdersQueryFilters>({
+    searchParams,
+    availableFilters: OrderAvailableFilters,
+    filtersNamePrefix: ORDER_LIST_FILTER_PREFIX,
+    keyMap: {
+      [AvailableFiltersEnum.orderStatus]: 'status',
+      [AvailableFiltersEnum.orderNumber]: 'number',
+      [AvailableFiltersEnum.multipleCustomers]: 'customerId',
+      [AvailableFiltersEnum.orderExecutionMode]: 'executionMode',
       [AvailableFiltersEnum.userIds]: 'ownerId',
     },
   })

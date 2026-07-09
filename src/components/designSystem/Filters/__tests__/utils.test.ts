@@ -3,6 +3,7 @@ import { DateTime } from 'luxon'
 import { AvailableFiltersEnum, filterDataInlineSeparator } from '../types'
 import {
   defineDefaultToDateValue,
+  escapeFilterLabel,
   FILTER_VALUE_MAP,
   formatActiveFilterValueDisplay,
   formatFiltersForCreditNotesQuery,
@@ -10,6 +11,7 @@ import {
   formatFiltersForInvoiceQuery,
   formatFiltersForMrrQuery,
   formatFiltersForOrderFormsQuery,
+  formatFiltersForOrdersQuery,
   formatFiltersForQuery,
   formatFiltersForQuotesQuery,
   formatFiltersForRevenueStreamsQuery,
@@ -21,6 +23,7 @@ import {
   keyWithPrefix,
   parseFromToValue,
   parseMetadataFilter,
+  unescapeFilterLabel,
 } from '../utils'
 
 describe('Filters utils', () => {
@@ -1501,6 +1504,150 @@ describe('Filters utils', () => {
         }),
       )
       expect(result).not.toHaveProperty('statuses')
+    })
+  })
+
+  describe('formatFiltersForOrdersQuery', () => {
+    it('should format order status filter with prefix', () => {
+      const searchParams = new URLSearchParams()
+
+      searchParams.set('or_orderStatus', 'created,executed')
+
+      const result = formatFiltersForOrdersQuery(searchParams)
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          status: ['created', 'executed'],
+        }),
+      )
+    })
+
+    it('should format order number filter as number', () => {
+      const searchParams = new URLSearchParams()
+
+      searchParams.set('or_orderNumber', 'OR-001,OR-002')
+
+      const result = formatFiltersForOrdersQuery(searchParams)
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          number: ['OR-001', 'OR-002'],
+        }),
+      )
+    })
+
+    it('should format execution mode filter', () => {
+      const searchParams = new URLSearchParams()
+
+      searchParams.set('or_orderExecutionMode', 'execute_in_lago,order_only')
+
+      const result = formatFiltersForOrdersQuery(searchParams)
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          executionMode: ['execute_in_lago', 'order_only'],
+        }),
+      )
+    })
+
+    it('should format multipleCustomers filter as customerId extracting ids', () => {
+      const searchParams = new URLSearchParams()
+
+      searchParams.set(
+        'or_multipleCustomers',
+        `cust-1${filterDataInlineSeparator}Acme Corp,cust-2${filterDataInlineSeparator}Beta Inc`,
+      )
+
+      const result = formatFiltersForOrdersQuery(searchParams)
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          customerId: ['cust-1', 'cust-2'],
+        }),
+      )
+    })
+
+    it('should format userIds filter as ownerId extracting ids', () => {
+      const searchParams = new URLSearchParams()
+
+      searchParams.set(
+        'or_userIds',
+        `user-1${filterDataInlineSeparator}Alice,user-2${filterDataInlineSeparator}Bob`,
+      )
+
+      const result = formatFiltersForOrdersQuery(searchParams)
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          ownerId: ['user-1', 'user-2'],
+        }),
+      )
+    })
+
+    it('should format orderExecutedAt into executedAtFrom and executedAtTo', () => {
+      const searchParams = new URLSearchParams()
+
+      searchParams.set('or_orderExecutedAt', '2026-01-01,2026-01-31')
+
+      const result = formatFiltersForOrdersQuery(searchParams)
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          executedAtFrom: '2026-01-01',
+          executedAtTo: '2026-01-31',
+        }),
+      )
+    })
+
+    it('should ignore unknown params', () => {
+      const searchParams = new URLSearchParams()
+
+      searchParams.set('or_orderStatus', 'created')
+      searchParams.set('randomSearchUrlParam', 'anditsvalue')
+
+      const result = formatFiltersForOrdersQuery(searchParams)
+
+      expect(result).toEqual({ status: ['created'] })
+    })
+  })
+
+  describe('comma-safe filter labels (escapeFilterLabel / unescapeFilterLabel)', () => {
+    it('escapes and unescapes a label containing commas, round-tripping exactly', () => {
+      const label = 'Bernhard, Strosin & Rolfson'
+      const escaped = escapeFilterLabel(label)
+
+      expect(escaped).not.toContain(',')
+      expect(unescapeFilterLabel(escaped)).toBe(label)
+    })
+
+    it('is a no-op for labels without commas', () => {
+      expect(escapeFilterLabel('Acme Corp')).toBe('Acme Corp')
+      expect(unescapeFilterLabel('Acme Corp')).toBe('Acme Corp')
+    })
+
+    it('keeps a comma-named customer as a single multipleCustomers chip with the real name', () => {
+      const value = `cust-1${filterDataInlineSeparator}${escapeFilterLabel('Bernhard, Strosin & Rolfson')}`
+
+      expect(formatActiveFilterValueDisplay(AvailableFiltersEnum.multipleCustomers, value)).toBe(
+        'Bernhard, Strosin & Rolfson',
+      )
+    })
+
+    it('extracts a single customer id from a comma-named customer in the query filters', () => {
+      const searchParams = new URLSearchParams()
+
+      searchParams.set(
+        'qu_multipleCustomers',
+        `cust-1${filterDataInlineSeparator}${escapeFilterLabel('Bernhard, Strosin & Rolfson')}`,
+      )
+
+      const result = formatFiltersForQuotesQuery(searchParams)
+
+      expect(result).toEqual(
+        expect.objectContaining({
+          customers: ['cust-1'],
+        }),
+      )
     })
   })
 })

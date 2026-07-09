@@ -101,6 +101,15 @@ describe('Quotes', () => {
         expect(capturedConfig?.tabs?.[2].link).toBe('/quotes/orders')
       })
 
+      it('THEN should hide the Order forms tab without the orderFormsView permission', () => {
+        mockHasPermissions.mockReturnValue(false)
+
+        render(<Quotes />)
+
+        expect(capturedConfig?.tabs).toHaveLength(2)
+        expect(capturedConfig?.tabs?.some((tab) => tab.link?.endsWith('/order-forms'))).toBe(false)
+      })
+
       it('THEN should render the active tab content', () => {
         mockHasPermissions.mockReturnValue(true)
 
@@ -220,6 +229,27 @@ describe('Quotes', () => {
         render(<Quotes />)
 
         expect(capturedConfig?.snapshotKey).toBe('order-forms')
+      })
+
+      it('THEN should configure MainHeader with a filters section', () => {
+        render(<Quotes />)
+
+        expect(capturedConfig?.filtersSection).toBeDefined()
+      })
+    })
+  })
+
+  describe('GIVEN the user is on the Orders tab', () => {
+    beforeEach(() => {
+      mockHasPermissions.mockReturnValue(true)
+      mockUseParams.mockReturnValue({ tab: 'orders' })
+    })
+
+    describe('WHEN the page renders', () => {
+      it('THEN should configure MainHeader with the orders snapshotKey', () => {
+        render(<Quotes />)
+
+        expect(capturedConfig?.snapshotKey).toBe('orders')
       })
 
       it('THEN should configure MainHeader with a filters section', () => {
