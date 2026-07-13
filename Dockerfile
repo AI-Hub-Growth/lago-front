@@ -4,10 +4,14 @@
 FROM lincanvas-registry.cn-hangzhou.cr.aliyuncs.com/lincanvas/node:24.18.0-alpine AS deps
 
 WORKDIR /app
+ENV COREPACK_NPM_REGISTRY=https://registry.npmmirror.com
+ENV NPM_CONFIG_REGISTRY=https://registry.npmmirror.com
 
 # corepack reads the pinned pnpm version from package.json's `packageManager`
 # field — no `pnpm@latest` drift.
-RUN apk add --no-cache python3 build-base && corepack enable
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+    apk add --no-cache python3 build-base && \
+    corepack enable
 
 # Only copy manifests here so this layer — and the pnpm install below — stay
 # cached across any source-only change.
@@ -30,8 +34,12 @@ FROM lincanvas-registry.cn-hangzhou.cr.aliyuncs.com/lincanvas/node:24.18.0-alpin
 
 WORKDIR /app
 ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV COREPACK_NPM_REGISTRY=https://registry.npmmirror.com
+ENV NPM_CONFIG_REGISTRY=https://registry.npmmirror.com
 
-RUN apk add --no-cache python3 build-base && corepack enable
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+    apk add --no-cache python3 build-base && \
+    corepack enable
 
 COPY --from=deps /app /app
 COPY . .
@@ -65,7 +73,9 @@ WORKDIR /usr/share/nginx/html
 # Blanket `apk upgrade` pulls the latest CVE patches for every package in the
 # base image. Costs ~5 MB vs hand-curating a package list, but auto-catches
 # new CVEs (e.g. a future zlib bump) without anyone remembering to add them.
-RUN apk upgrade --no-cache && apk add --no-cache bash
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories && \
+    apk upgrade --no-cache && \
+    apk add --no-cache bash
 
 COPY --from=build /app/dist .
 COPY ./nginx/nginx.conf /etc/nginx/conf.d/default.conf
