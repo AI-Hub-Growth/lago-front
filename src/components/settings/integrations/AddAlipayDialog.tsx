@@ -7,7 +7,7 @@ import { object, string } from 'yup'
 
 import { Button } from '~/components/designSystem/Button'
 import { Dialog, DialogRef } from '~/components/designSystem/Dialog'
-import { TextInputField } from '~/components/form'
+import { ComboBoxField, TextInputField } from '~/components/form'
 import { addToast } from '~/core/apolloClient'
 import { IntegrationsTabsOptionsEnum } from '~/core/constants/tabsOptions'
 import { ALIPAY_INTEGRATION_DETAILS_ROUTE, useNavigate } from '~/core/router'
@@ -22,6 +22,7 @@ export const ALIPAY_PROVIDER_FIELDS = gql`
     appId
     appPrivateKey
     alipayPublicKey
+    environment
     successRedirectUrl
   }
 `
@@ -79,6 +80,7 @@ type AlipayProvider = {
   appId?: string | null
   appPrivateKey?: string | null
   alipayPublicKey?: string | null
+  environment: 'sandbox' | 'production'
   successRedirectUrl?: string | null
 }
 
@@ -88,6 +90,7 @@ type AddAlipayForm = {
   appId: string
   appPrivateKey: string
   alipayPublicKey: string
+  environment: 'sandbox' | 'production'
   successRedirectUrl: string
 }
 
@@ -148,6 +151,7 @@ export const AddAlipayDialog = forwardRef<AddAlipayDialogRef>((_, ref) => {
       appId: alipayProvider?.appId || '',
       appPrivateKey: '',
       alipayPublicKey: '',
+      environment: alipayProvider?.environment || 'sandbox',
       successRedirectUrl: alipayProvider?.successRedirectUrl || '',
     },
     validationSchema: object().shape({
@@ -156,6 +160,7 @@ export const AddAlipayDialog = forwardRef<AddAlipayDialogRef>((_, ref) => {
       appId: string().required(''),
       appPrivateKey: isEdition ? string() : string().required(''),
       alipayPublicKey: isEdition ? string() : string().required(''),
+      environment: string().oneOf(['sandbox', 'production']).required(''),
       successRedirectUrl: string(),
     }),
     onSubmit: async (
@@ -265,6 +270,7 @@ export const AddAlipayDialog = forwardRef<AddAlipayDialogRef>((_, ref) => {
       <div className="mb-8 flex flex-col gap-6">
         <div className="flex flex-row items-start gap-6 *:flex-1">
           <TextInputField
+            // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus
             formikProps={formikProps}
             name="name"
@@ -283,6 +289,23 @@ export const AddAlipayDialog = forwardRef<AddAlipayDialogRef>((_, ref) => {
           name="appId"
           label={translate('text_1782864000000alipayappid')}
           placeholder="2021000000000000"
+        />
+        <ComboBoxField
+          formikProps={formikProps}
+          name="environment"
+          label={translate('text_1782864000000alipayenvironment')}
+          data={[
+            {
+              label: translate('text_1782864000000alipaysandbox'),
+              value: 'sandbox',
+            },
+            {
+              label: translate('text_1782864000000alipayproduction'),
+              value: 'production',
+            },
+          ]}
+          disableClearable
+          PopperProps={{ displayInDialog: true }}
         />
         <TextInputField
           formikProps={formikProps}

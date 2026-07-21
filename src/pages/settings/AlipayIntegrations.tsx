@@ -12,7 +12,7 @@ import {
 } from '~/components/settings/integrations/AddAlipayDialog'
 import { useDeleteAlipayIntegrationDialog } from '~/components/settings/integrations/DeleteAlipayIntegrationDialog'
 import { IntegrationsTabsOptionsEnum } from '~/core/constants/tabsOptions'
-import { ALIPAY_INTEGRATION_DETAILS_ROUTE, INTEGRATIONS_ROUTE, useNavigate } from '~/core/router'
+import { ALIPAY_INTEGRATION_DETAILS_ROUTE, INTEGRATIONS_ROUTE } from '~/core/router'
 import { ProviderTypeEnum } from '~/generated/graphql'
 import { useInternationalization } from '~/hooks/core/useInternationalization'
 import { usePermissions } from '~/hooks/usePermissions'
@@ -35,10 +35,10 @@ type AlipayProvider = {
   id: string
   name: string
   code: string
+  environment: 'sandbox' | 'production'
 }
 
 const AlipayIntegrations = () => {
-  const navigate = useNavigate()
   const { hasPermissions } = usePermissions()
   const { translate } = useInternationalization()
   const addAlipayDialogRef = useRef<AddAlipayDialogRef>(null)

@@ -41,6 +41,7 @@ type AlipayProvider = {
   appId?: string | null
   appPrivateKey?: string | null
   alipayPublicKey?: string | null
+  environment: 'sandbox' | 'production'
   successRedirectUrl?: string | null
 }
 
@@ -182,6 +183,15 @@ const AlipayIntegrationDetails = () => {
                 icon="id"
                 label={translate('text_1782864000000alipayappid')}
                 value={alipayPaymentProvider.appId ?? undefined}
+              />
+              <IntegrationsPage.DetailsItem
+                icon="text"
+                label={translate('text_1782864000000alipayenvironment')}
+                value={translate(
+                  alipayPaymentProvider.environment === 'sandbox'
+                    ? 'text_1782864000000alipaysandbox'
+                    : 'text_1782864000000alipayproduction',
+                )}
               />
               <IntegrationsPage.DetailsItem
                 icon="key"

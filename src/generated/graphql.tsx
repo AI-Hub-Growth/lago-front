@@ -215,6 +215,7 @@ export type AddAlipayPaymentProviderInput = {
   /** A unique identifier for the client performing the mutation. */
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   code: Scalars['String']['input'];
+  environment?: InputMaybe<AlipayEnvironmentEnum>;
   name: Scalars['String']['input'];
   successRedirectUrl?: InputMaybe<Scalars['String']['input']>;
 };
@@ -439,12 +440,18 @@ export enum AlertTypeEnum {
   WalletOngoingBalanceAmount = 'wallet_ongoing_balance_amount'
 }
 
+export enum AlipayEnvironmentEnum {
+  Production = 'production',
+  Sandbox = 'sandbox'
+}
+
 export type AlipayProvider = {
   __typename?: 'AlipayProvider';
   alipayPublicKey?: Maybe<Scalars['ObfuscatedString']['output']>;
   appId?: Maybe<Scalars['String']['output']>;
   appPrivateKey?: Maybe<Scalars['ObfuscatedString']['output']>;
   code: Scalars['String']['output'];
+  environment: AlipayEnvironmentEnum;
   id: Scalars['ID']['output'];
   name: Scalars['String']['output'];
   successRedirectUrl?: Maybe<Scalars['String']['output']>;
@@ -9552,6 +9559,7 @@ export type UpdateAlipayPaymentProviderInput = {
   /** A unique identifier for the client performing the mutation. */
   clientMutationId?: InputMaybe<Scalars['String']['input']>;
   code?: InputMaybe<Scalars['String']['input']>;
+  environment?: InputMaybe<AlipayEnvironmentEnum>;
   id: Scalars['ID']['input'];
   name?: InputMaybe<Scalars['String']['input']>;
   successRedirectUrl?: InputMaybe<Scalars['String']['input']>;
@@ -12024,7 +12032,7 @@ export type UpdateAdyenApiKeyMutationVariables = Exact<{
 
 export type UpdateAdyenApiKeyMutation = { __typename?: 'Mutation', updateAdyenPaymentProvider?: { __typename?: 'AdyenProvider', id: string, name: string, code: string, apiKey?: any | null, hmacKey?: any | null, livePrefix?: string | null, merchantAccount?: string | null, successRedirectUrl?: string | null } | null };
 
-export type AlipayProviderFieldsFragment = { __typename?: 'AlipayProvider', id: string, name: string, code: string, appId?: string | null, appPrivateKey?: any | null, alipayPublicKey?: any | null, successRedirectUrl?: string | null };
+export type AlipayProviderFieldsFragment = { __typename?: 'AlipayProvider', id: string, name: string, code: string, appId?: string | null, appPrivateKey?: any | null, alipayPublicKey?: any | null, environment: AlipayEnvironmentEnum, successRedirectUrl?: string | null };
 
 export type GetProviderByCodeForAlipayQueryVariables = Exact<{
   code?: InputMaybe<Scalars['String']['input']>;
@@ -12046,14 +12054,14 @@ export type AddAlipayPaymentProviderMutationVariables = Exact<{
 }>;
 
 
-export type AddAlipayPaymentProviderMutation = { __typename?: 'Mutation', addAlipayPaymentProvider?: { __typename?: 'AlipayProvider', id: string, name: string, code: string, appId?: string | null, appPrivateKey?: any | null, alipayPublicKey?: any | null, successRedirectUrl?: string | null } | null };
+export type AddAlipayPaymentProviderMutation = { __typename?: 'Mutation', addAlipayPaymentProvider?: { __typename?: 'AlipayProvider', id: string, name: string, code: string, appId?: string | null, appPrivateKey?: any | null, alipayPublicKey?: any | null, environment: AlipayEnvironmentEnum, successRedirectUrl?: string | null } | null };
 
 export type UpdateAlipayPaymentProviderMutationVariables = Exact<{
   input: UpdateAlipayPaymentProviderInput;
 }>;
 
 
-export type UpdateAlipayPaymentProviderMutation = { __typename?: 'Mutation', updateAlipayPaymentProvider?: { __typename?: 'AlipayProvider', id: string, name: string, code: string, appId?: string | null, appPrivateKey?: any | null, alipayPublicKey?: any | null, successRedirectUrl?: string | null } | null };
+export type UpdateAlipayPaymentProviderMutation = { __typename?: 'Mutation', updateAlipayPaymentProvider?: { __typename?: 'AlipayProvider', id: string, name: string, code: string, appId?: string | null, appPrivateKey?: any | null, alipayPublicKey?: any | null, environment: AlipayEnvironmentEnum, successRedirectUrl?: string | null } | null };
 
 export type AddAnrokIntegrationDialogFragment = { __typename?: 'AnrokIntegration', id: string, name: string, code: string, apiKey: any };
 
@@ -14698,7 +14706,7 @@ export type GetAlipayIntegrationDetailsQueryVariables = Exact<{
 
 export type GetAlipayIntegrationDetailsQuery = { __typename?: 'Query', paymentProvider?:
     | { __typename?: 'AdyenProvider' }
-    | { __typename?: 'AlipayProvider', id: string, name: string, code: string, appId?: string | null, appPrivateKey?: any | null, alipayPublicKey?: any | null, successRedirectUrl?: string | null }
+    | { __typename?: 'AlipayProvider', id: string, name: string, code: string, appId?: string | null, appPrivateKey?: any | null, alipayPublicKey?: any | null, environment: AlipayEnvironmentEnum, successRedirectUrl?: string | null }
     | { __typename?: 'CashfreeProvider' }
     | { __typename?: 'FlutterwaveProvider' }
     | { __typename?: 'GocardlessProvider' }
@@ -14714,7 +14722,7 @@ export type GetAlipayIntegrationsListQueryVariables = Exact<{
 
 export type GetAlipayIntegrationsListQuery = { __typename?: 'Query', paymentProviders?: { __typename?: 'PaymentProviderCollection', collection: Array<
       | { __typename?: 'AdyenProvider' }
-      | { __typename?: 'AlipayProvider', id: string, name: string, code: string, appId?: string | null, appPrivateKey?: any | null, alipayPublicKey?: any | null, successRedirectUrl?: string | null }
+      | { __typename?: 'AlipayProvider', id: string, name: string, code: string, appId?: string | null, appPrivateKey?: any | null, alipayPublicKey?: any | null, environment: AlipayEnvironmentEnum, successRedirectUrl?: string | null }
       | { __typename?: 'CashfreeProvider' }
       | { __typename?: 'FlutterwaveProvider' }
       | { __typename?: 'GocardlessProvider' }
@@ -18065,6 +18073,7 @@ export const AlipayProviderFieldsFragmentDoc = gql`
   appId
   appPrivateKey
   alipayPublicKey
+  environment
   successRedirectUrl
 }
     `;
